@@ -27,33 +27,81 @@ class Picture extends Base
      * @return string
      */
     public static function pictureUrl(
-        $width = 640,
-        $height = 480,
-        $grayscale = false,
-        $blur = 0
-    ) {
+        int $width = 640,
+        int $height = 480,
+        bool $grayscale = false,
+        int $blur = 0
+    ): string {
         $path = sprintf('%s/%s', $width, $height);
 
         $queryParams = [];
 
-        if( $grayscale ) {
+        if ($grayscale) {
             $queryParams['grayscale'] = true;
         }
 
-        if( $blur > 0 ) {
-            if( $blur > 10 ) {
+        if ($blur > 0) {
+            if ($blur > 10) {
                 $blur = 10;
             }
             $queryParams['blur'] = $blur;
         }
 
-        $queryString = ( ! empty($queryParams) ? http_build_query($queryParams) : false );
+        $queryString = (!empty($queryParams) ? http_build_query($queryParams) : false);
 
         return sprintf(
             '%s/%s%s',
             self::BASE_URL,
             $path,
-            ( $queryString ? '?' . $queryString : '' )
+            ($queryString ? '?' . $queryString : '')
+        );
+    }
+
+
+    /**
+     * Generate the URL that will return of random images
+     *
+     * Set randomize to false to remove the random GET parameter at the end of the url.
+     *
+     * @example 'https://picsum.photos/id/384/640x480.png?grayscale=1&blur=2'
+     *
+     * @param int $id
+     * @param int $width
+     * @param int $height
+     * @param bool $grayscale
+     * @param int $blur
+     *
+     * @return string
+     */
+    public static function pictureRandomUrl(
+        int $id = 0, // between 0 - 400
+        int $width = 640,
+        int $height = 480,
+        bool $grayscale = false,
+        int $blur = 0
+    ): string {
+        $path = sprintf('%s/%s/%s/%s', 'id', $id, $width, $height);
+
+        $queryParams = [];
+
+        if ($grayscale) {
+            $queryParams['grayscale'] = true;
+        }
+
+        if ($blur > 0) {
+            if ($blur > 10) {
+                $blur = 10;
+            }
+            $queryParams['blur'] = $blur;
+        }
+
+        $queryString = (!empty($queryParams) ? http_build_query($queryParams) : false);
+
+        return sprintf(
+            '%s/%s%s',
+            self::BASE_URL,
+            $path,
+            ($queryString ? '?' . $queryString : '')
         );
     }
 
@@ -65,16 +113,16 @@ class Picture extends Base
      * @example '/path/to/dir/13b73edae8443990be1aa8f1a483bc27.png'
      */
     public static function picture(
-        $dir = null,
-        $width = 640,
-        $height = 480,
-        $fullPath = true,
-        $grayscale = false,
-        $blur = 0
-    ) {
+        string $dir = null,
+        int $width = 640,
+        int $height = 480,
+        bool $fullPath = true,
+        bool $grayscale = false,
+        int $blur = 0
+    ): string {
         $dir = is_null($dir) ? sys_get_temp_dir() : $dir; // GNU/Linux / OS X / Windows compatible
         // Validate directory path
-        if ( ! is_dir($dir) || ! is_writable($dir) ) {
+        if (!is_dir($dir) || !is_writable($dir)) {
             throw new \InvalidArgumentException(sprintf('Cannot write to directory "%s"', $dir));
         }
 
@@ -84,7 +132,7 @@ class Picture extends Base
         $filename = $name . '.jpg';
         $filepath = $dir . DIRECTORY_SEPARATOR . $filename;
 
-        $url = static::pictureUrl($width, $height, $grayscale, $blur);
+        $url = static::pictureRandomUrl($width, $height, $grayscale, $blur);
 
         // save file
         if (function_exists('curl_exec')) {
